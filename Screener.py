@@ -33,21 +33,19 @@ st.set_page_config(page_title="Alpha Hunter Premium Elite", layout="wide")
 login_sistema()
 
 # --- 3. PERSISTENCIA POR USUARIO (TUS 3 PUNTOS) ---
-def get_user_file(base_name):
-    usuario = st.session_state.get("usuario", "anonimo")
-    return f"{usuario}_{base_name}"
+def get_user_path(base_name):
+    # Crea un nombre de archivo único por usuario (ej. .jose_tradier_token)
+    usuario_limpio = st.session_state.get("usuario", "default").lower()
+    return f".{usuario_limpio}_{base_name}"
 
-def save_data(file_name, content):
-    user_file = get_user_file(file_name)
-    with open(user_file, "w") as f:
-        f.write(content)
+def save_data(f_name, content): 
+    path = get_user_path(f_name)
+    with open(path, "w") as file: 
+        file.write(content)
 
-def load_data(file_name, default=""):
-    user_file = get_user_file(file_name)
-    if os.path.exists(user_file):
-        with open(user_file, "r") as f:
-            return f.read().strip()
-    return default
+def load_data(f_name, default=""): 
+    path = get_user_path(f_name)
+    return open(path, "r").read().strip() if os.path.exists(path) else default
 
 # --- 4. ESTILO VISUAL ORIGINAL ---
 st.markdown("""
@@ -64,15 +62,17 @@ st.markdown("""
 
 # --- 5. BARRA LATERAL ---
 st.sidebar.title("🚀 Centro de Mando")
-st.sidebar.write(f"👤 Usuario: **{st.session_state['usuario']}**")
+st.sidebar.write(f"👤 Usuario: **{st.session_state.get('usuario', 'Invitado')}**")
 
-tradier_token = st.sidebar.text_input("Tradier Token", value=load_data(".tradier_token"), type="password")
-av_key = st.sidebar.text_input("Alpha Vantage Key", value=load_data(".av_key"), type="password")
+# Cargamos las keys específicas de este usuario
+tradier_token = st.sidebar.text_input("Tradier Token", value=load_data("tradier_token"), type="password")
+av_key = st.sidebar.text_input("Alpha Vantage Key", value=load_data("av_key"), type="password")
 
-if st.sidebar.button("💾 Guardar mi Configuración"):
-    save_data(".tradier_token", tradier_token)
-    save_data(".av_key", av_key)
-    st.sidebar.success("¡Configuración guardada!")
+# Botón para guardar manualmente y confirmar persistencia
+if st.sidebar.button("💾 Guardar mis Credenciales"):
+    save_data("tradier_token", tradier_token)
+    save_data("av_key", av_key)
+    st.sidebar.success("¡Claves guardadas para tu usuario!")
 
 entorno = st.sidebar.selectbox("Entorno Tradier", ["Sandbox", "Brokerage"])
 API_TRADIER = "https://api.tradier.com/v1/" if entorno == "Brokerage" else "https://sandbox.tradier.com/v1/"
@@ -89,6 +89,8 @@ else:
 
 dte_r = st.sidebar.slider("Rango DTE", 0, 90, (7, 45))
 roi_min_f = st.sidebar.number_input("ROI Ann Mín %", value=15.0, step=1.0)
+
+st.sidebar.divider()
 f_sma = st.sidebar.toggle("Solo SMA 200 (✅)", value=False)
 f_stoch = st.sidebar.toggle("Solo Stoch < 30 (1D) 📉", value=False)
 
@@ -226,3 +228,4 @@ with tab1:
             fig.add_trace(go.Scatter(x=x, y=y, name="P/L", line=dict(color='#2ecc71', width=4)))
             fig.update_layout(template="plotly_dark", height=400)
             st.plotly_chart(fig, use_container_width=True)
+
