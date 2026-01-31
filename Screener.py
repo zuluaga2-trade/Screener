@@ -19,14 +19,17 @@ def login_sistema():
             u = st.text_input("Usuario")
             p = st.text_input("Contraseña", type="password")
             if st.form_submit_button("Entrar al Búnker"):
-                # Aquí tus claves
-                usuarios = {"admin": "master2026", "amigo1": "hunter77"}
-                if u in usuarios and usuarios[u] == p:
+                # ESTA LÍNEA ES LA CLAVE:
+                # Intenta leer de Secrets, si no encuentra nada, el diccionario está vacío {}
+                db_usuarios = st.secrets.get("usuarios", {})
+                
+                # Verificamos si el usuario existe en los Secrets y si la clave coincide
+                if u in db_usuarios and str(db_usuarios[u]) == p:
                     st.session_state["autenticado"] = True
                     st.session_state["usuario"] = u
                     st.rerun()
                 else:
-                    st.error("Credenciales incorrectas")
+                    st.error("❌ Credenciales incorrectas o usuario no registrado.")
         st.stop()
 
 # --- 2. CONFIGURACIÓN INICIAL (ESTO DEBE IR PRIMERO) ---
@@ -320,4 +323,5 @@ with tab1:
             fig.add_trace(go.Scatter(x=[row['Precio'], row['Precio']], y=[min(y), max(y)], name="Precio Hoy", line=dict(color="white", width=4)))
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
+
             st.plotly_chart(fig, use_container_width=True)
