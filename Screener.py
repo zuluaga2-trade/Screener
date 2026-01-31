@@ -5,10 +5,10 @@ import os
 import plotly.graph_objects as go
 import numpy as np
 import io
-import yfinance as yf  
+import yfinance as yf
 from datetime import datetime, timedelta
 
-# --- 1. FUNCIÓN DE SEGURIDAD (LA CERRADURA) ---
+# --- 1. FUNCIÓN DE SEGURIDAD ---
 def login_sistema():
     if "autenticado" not in st.session_state:
         st.session_state["autenticado"] = False
@@ -19,11 +19,7 @@ def login_sistema():
             u = st.text_input("Usuario")
             p = st.text_input("Contraseña", type="password")
             if st.form_submit_button("Entrar al Búnker"):
-                # ESTA LÍNEA ES LA CLAVE:
-                # Intenta leer de Secrets, si no encuentra nada, el diccionario está vacío {}
                 db_usuarios = st.secrets.get("usuarios", {})
-                
-                # Verificamos si el usuario existe en los Secrets y si la clave coincide
                 if u in db_usuarios and str(db_usuarios[u]) == p:
                     st.session_state["autenticado"] = True
                     st.session_state["usuario"] = u
@@ -32,91 +28,52 @@ def login_sistema():
                     st.error("❌ Credenciales incorrectas o usuario no registrado.")
         st.stop()
 
-# --- 2. CONFIGURACIÓN INICIAL (ESTO DEBE IR PRIMERO) ---
-st.set_page_config(page_title="Alpha Hunter Premium Elite", layout="wide")
-
-# Lanzamos el muro
-login_sistema()
-
-# --- 3. TU ESTILO ORIGINAL (EL DISEÑO HERMOSO) ---
-st.markdown("""
-    <style>
-    .main { background-color: #0e1117; }
-    .metric-card { background-color: #1b212c; padding: 20px; border-radius: 12px; border: 1px solid #30363d; text-align: center; min-height: 140px; }
-    .fundamental-box { background-color: #0d1117; border: 1px solid #00f2ff; padding: 20px; border-radius: 10px; margin-top: 10px; }
-    .vola-master { background: linear-gradient(90deg, #2c1a4d 0%, #161b22 100%); border-left: 8px solid #9b59b6; padding: 25px; border-radius: 15px; margin: 20px 0; border-top: 1px solid #30363d; border-right: 1px solid #30363d; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); }
-    .status-ok { color: #2ecc71; font-weight: bold; }
-    .status-danger { color: #e74c3c; font-weight: bold; }
-    .tooltip { position: relative; display: inline-block; cursor: help; border-bottom: 2px dotted #00f2ff; color: #00f2ff; font-weight: bold; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# A PARTIR DE AQUÍ SIGUE TU CÓDIGO DE PERSISTENCIA (def save_data, etc.)
-
-import streamlit as st
-import pandas as pd
-import requests
-import os
-import plotly.graph_objects as go
-import numpy as np
-import io
-import yfinance as yf  # <-- PARCHE: Importación necesaria
-from datetime import datetime, timedelta
-
-# --- 1. CONFIGURACIÓN DE ESTILO ---
+# --- 2. CONFIGURACIÓN INICIAL ---
 st.set_page_config(page_title="Alpha Hunter Premium Elite", layout="wide")
 login_sistema()
-st.markdown("""
-    <style>
-    .main { background-color: #0e1117; }
-    .metric-card { background-color: #1b212c; padding: 20px; border-radius: 12px; border: 1px solid #30363d; text-align: center; min-height: 140px; }
-    .fundamental-box { background-color: #0d1117; border: 1px solid #00f2ff; padding: 20px; border-radius: 10px; margin-top: 10px; }
-    .vola-master { background: linear-gradient(90deg, #2c1a4d 0%, #161b22 100%); border-left: 8px solid #9b59b6; padding: 25px; border-radius: 15px; margin: 20px 0; border-top: 1px solid #30363d; border-right: 1px solid #30363d; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); }
-    .status-ok { color: #2ecc71; font-weight: bold; }
-    .status-danger { color: #e74c3c; font-weight: bold; }
-    .tooltip { position: relative; display: inline-block; cursor: help; border-bottom: 2px dotted #00f2ff; color: #00f2ff; font-weight: bold; }
-    </style>
-    """, unsafe_allow_html=True)
 
-# --- 2. FUNCIONES CON MEMORIA POR USUARIO ---
-
+# --- 3. FUNCIONES DE MEMORIA POR USUARIO (MODIFICADO) ---
 def get_user_file(base_name):
-    """Crea un nombre de archivo único por usuario"""
     usuario = st.session_state.get("usuario", "anonimo")
     return f"{usuario}_{base_name}"
 
 def save_data(file_name, data):
-    # Ahora guardará: Jorge_.tradier_token o Deivis_.tradier_token
     user_file = get_user_file(file_name)
     with open(user_file, "w") as f:
         f.write(data)
 
-def load_data(file_name):
+def load_data(file_name, default=""):
     user_file = get_user_file(file_name)
     if os.path.exists(user_file):
         with open(user_file, "r") as f:
             return f.read().strip()
-    return ""
+    return default
 
-# --- 3. BARRA LATERAL ---
+# --- 4. ESTILO ORIGINAL ---
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; }
+    .metric-card { background-color: #1b212c; padding: 20px; border-radius: 12px; border: 1px solid #30363d; text-align: center; min-height: 140px; }
+    .fundamental-box { background-color: #0d1117; border: 1px solid #00f2ff; padding: 20px; border-radius: 10px; margin-top: 10px; }
+    .vola-master { background: linear-gradient(90deg, #2c1a4d 0%, #161b22 100%); border-left: 8px solid #9b59b6; padding: 25px; border-radius: 15px; margin: 20px 0; border-top: 1px solid #30363d; border-right: 1px solid #30363d; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); }
+    .status-ok { color: #2ecc71; font-weight: bold; }
+    .status-danger { color: #e74c3c; font-weight: bold; }
+    .tooltip { position: relative; display: inline-block; cursor: help; border-bottom: 2px dotted #00f2ff; color: #00f2ff; font-weight: bold; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- 5. BARRA LATERAL (PERSONALIZACIÓN PARA TODOS) ---
 st.sidebar.title("🚀 Centro de Mando")
 st.sidebar.write(f"👤 Usuario: **{st.session_state['usuario']}**")
 
-# Solo cargamos datos guardados si el usuario es Jorge (Tú)
-# Para Deivis y Camilo, empezará en blanco
-es_admin = st.session_state['usuario'] == "Jorge"
+# Cargamos las llaves específicas del usuario que inició sesión
+tradier_token = st.sidebar.text_input("Tradier Token", value=load_data(".tradier_token"), type="password")
+av_key = st.sidebar.text_input("Alpha Vantage Key", value=load_data(".av_key"), type="password")
 
-token_inicial = load_data(".tradier_token") if es_admin else ""
-av_inicial = load_data(".av_key") if es_admin else ""
-
-tradier_token = st.sidebar.text_input("Tradier Token", value=token_inicial, type="password")
-av_key = st.sidebar.text_input("Alpha Vantage Key", value=av_inicial, type="password")
-
-# Solo guardamos permanentemente si tú (Jorge) haces cambios
-if tradier_token and es_admin: 
+if st.sidebar.button("💾 Guardar mis Keys"):
     save_data(".tradier_token", tradier_token)
-if av_key and es_admin: 
     save_data(".av_key", av_key)
+    st.sidebar.success("¡Configuración guardada para este usuario!")
 
 entorno = st.sidebar.selectbox("Entorno Tradier", ["Sandbox", "Brokerage"])
 API_TRADIER = "https://api.tradier.com/v1/" if entorno == "Brokerage" else "https://sandbox.tradier.com/v1/"
@@ -138,14 +95,20 @@ st.sidebar.divider()
 f_sma = st.sidebar.toggle("Solo SMA 200 (✅)", value=False)
 f_stoch = st.sidebar.toggle("Solo Stoch < 30 (1D) 📉", value=False)
 
-# --- 4. DASHBOARD DE PESTAÑAS ---
+# --- 6. DASHBOARD DE PESTAÑAS ---
 tab1, tab2, tab3 = st.tabs(["📊 SCREENER PROFESIONAL", "🏗️ BÚNKER DE TICKERS", "🧠 ACADEMIA DE VOLATILIDAD"])
 
 with tab2:
     st.subheader("⚙️ Configuración del Búnker")
+    # Lista por defecto para nuevos usuarios
     def_list = "AAPL,ADBE,AGQ,AMD,AMDL,AMZN,ANET,ARM,AVGO,BA,BITO,COST,CRM,DIS,FTNT,GOOGL,HIMS,JNJ,LULU,META,MSFL,MSFT,NAIL,NKE,NOW,NVDA,NVDL,NVO,PLTR,SOXL,TECL,TLT,TQQQ,TSLA,TSLL,UNH"
     user_list = st.text_area("Edita la lista de fundamentales (separada por coma):", value=load_data(".watchlist", def_list), height=150)
-    save_data(".watchlist", user_list)
+    
+    if st.button("Actualizar mi Búnker"):
+        save_data(".watchlist", user_list)
+        st.success("Lista guardada!")
+        st.rerun()
+        
     tickers_clean = sorted(list(set([x.strip().upper() for x in user_list.split(",") if x.strip()])))
     cols = st.columns(6)
     for i, t in enumerate(tickers_clean): cols[i % 6].caption(f"🔹 {t}")
@@ -154,17 +117,12 @@ with tab3:
     st.subheader("📖 Manual Estratégico de Volatilidad")
     st.markdown("""
     Para operar como un profesional, debes entender que la **Volatilidad** es el precio del miedo.
-    
-    - **IV Rank:** Indica en qué percentil está la IV actual respecto al último año. Si es **> 50%**, las primas están inusualmente caras.
-    - **ATR (Average True Range):** Define el 'ruido' diario. Si tu Strike está a menos de 2 ATRs del precio, tienes alta probabilidad de ser asignado.
-    - **HV (Volatilidad Histórica):** El movimiento real. Si **IV > HV**, existe una 'Prima de Riesgo' que el vendedor captura a su favor.
-    
-    **Ejemplo Real:**
-    - Acción a $150. Strike a $130. ATR es $3.00.
-    - Estás a $20 de distancia, lo que equivale a casi **7 días de ATR**. Si la IV es mayor que la HV y no hay Earnings, la probabilidad de éxito es masiva.
+    - **IV Rank:** Indica en qué percentil está la IV actual respecto al último año.
+    - **ATR (Average True Range):** Define el 'ruido' diario.
+    - **HV (Volatilidad Histórica):** El movimiento real.
     """)
 
-# --- 5. MOTORES DE DATOS (CON PARCHE DE REDUNDANCIA) ---
+# --- 7. MOTORES DE DATOS ---
 @st.cache_data(ttl=86400)
 def sync_global_earnings(key):
     try:
@@ -173,8 +131,7 @@ def sync_global_earnings(key):
     except: return {}
 
 @st.cache_data(ttl=86400)
-def get_hybrid_overview(sym, key): # <-- PARCHE: Función híbrida
-    # Intento 1: Alpha Vantage
+def get_hybrid_overview(sym, key):
     try:
         r = requests.get(f'https://www.alphavantage.co/query?function=OVERVIEW&symbol={sym}&apikey={key}', timeout=8).json()
         if "Symbol" in r and float(r.get('AnalystTargetPrice', 0)) > 0:
@@ -186,11 +143,8 @@ def get_hybrid_overview(sym, key): # <-- PARCHE: Función híbrida
                 "source": "Alpha Vantage"
             }
     except: pass
-    
-    # Intento 2: yFinance (Respaldo)
     try:
-        t = yf.Ticker(sym)
-        i = t.info
+        t = yf.Ticker(sym); i = t.info
         return {
             "target": round(i.get('targetMeanPrice', 0), 2),
             "margin": round(i.get('operatingMargins', 0) * 100, 2),
@@ -209,29 +163,19 @@ def get_market_techs(sym):
         close = df['close'].astype(float)
         sma200, sma40 = close.iloc[-200:].mean(), close.iloc[-40:].mean()
         low_14, high_14 = df['low'].astype(float).rolling(14).min(), df['high'].astype(float).rolling(14).max()
-        stoch = 100 * ((close - low_14) / (high_14 - low_14))
+        stoch = 100 * ((close.iloc[-1] - low_14.iloc[-1]) / (high_14.iloc[-1] - low_14.iloc[-1]))
         tr = np.maximum(df['high'].astype(float) - df['low'].astype(float), abs(df['high'].astype(float) - close.shift(1)))
         hv = np.log(close / close.shift(1)).std() * np.sqrt(252) * 100
-        return round(sma200, 2), round(sma40, 2), round(stoch.rolling(3).mean().iloc[-1], 2), round(tr.rolling(14).mean().iloc[-1], 2), round(hv, 2)
+        return round(sma200, 2), round(sma40, 2), round(stoch, 2), round(tr.rolling(14).mean().iloc[-1], 2), round(hv, 2)
     except: return None, None, 50.0, 0.0, 0.0
 
-# --- 6. SCREENER ---
+# --- 8. SCREENER ---
 with tab1:
     CATEGORIAS = {
         "🌐 SCANNER GLOBAL": ["SPY","TSLA","NVDA","AAPL","META","AMD","MSFT","PLTR","AMZN","NFLX","XOM","BA","JPM","DIS","GOOGL"],
         "🌐 WATCHLIST PRO": tickers_clean,
         "📊 ETFs & Índices": ["SPY", "QQQ", "IWM", "DIA", "TLT", "XLE", "XLF", "XLV", "XLI", "XLK", "XLU", "XLRE"],
         "🚀 HIGH VOL": ["MSTR", "MARA", "COIN", "SOXL", "AFRM", "ROKU", "PLTR", "TQQQ"],
-        "💻 TECNOLOGÍA": ["MSFT", "AAPL", "NVDA", "AMD", "AVGO", "ORCL", "CRM", "INTC", "SMCI", "NOW", "ANET"],
-        "🛍️ CONSUMO": ["AMZN", "TSLA", "HD", "MCD", "NKE", "SBUX", "BKNG", "COST", "LULU", "NVO"],
-        "💊 SALUD": ["LLY", "JNJ", "UNH", "PFE", "ABBV", "MRK", "TMO", "ISRG"],
-        "🏦 FINANZAS": ["JPM", "BAC", "GS", "MS", "V", "MA", "AXP", "WFC"],
-        "🏗️ INDUSTRIAL": ["BA", "CAT", "GE", "UNP", "HON", "UPS", "LMT", "RTX", "DE"],
-        "🛢️ ENERGÍA": ["XOM", "CVX", "COP", "SLB", "XLE", "MPC", "PSX", "VLO"],
-        "🏢 INMOBILIARIO": ["PLD", "AMT", "EQIX", "CCI", "WY", "SPG", "O"],
-        "⛏️ MATERIALES": ["LIN", "APD", "NEM", "FCX", "SHW", "CTVA", "ECL"],
-        "🔌 UTILITIES": ["NEE", "DUK", "SO", "D", "AEP", "EXC", "AWK"],
-        "📡 COMUNICACIONES": ["GOOGL", "META", "NFLX", "DIS", "TMUS", "VZ", "CMCSA"],
         "🎯 INDIVIDUAL": ["CUSTOM"]
     }
     
@@ -304,7 +248,6 @@ with tab1:
             row = df.iloc[event.selection.rows[0]]
             st.divider()
             st.subheader(f"🔍 Ficha Sniper: {row['Ticker']} - Strike ${row['Strike']:,.2f}")
-            
             c1, c2, c3, c4, c5 = st.columns(5)
             with c1: st.markdown(f"<div class='metric-card'><b style='color:#2ecc71'>ROI ANUAL</b><br><h3>{row['ROI Ann %']:,.2f}%</h3><b>DTE: {row['DTE']}</b></div>", unsafe_allow_html=True)
             with c2: st.markdown(f"<div class='metric-card'><b>BLOQUEADO</b><br><h3>${(row['Strike']*100):,.2f}</h3><b>PRIMA: ${(row['Prima']*100):,.2f}</b></div>", unsafe_allow_html=True)
@@ -328,17 +271,14 @@ with tab1:
             </div>""", unsafe_allow_html=True)
 
             if st.button(f"📊 Ver Análisis de Negocio para {row['Ticker']}"):
-                av = get_hybrid_overview(row['Ticker'], av_key) # <-- LLAMADA AL PARCHE HÍBRIDO
+                av = get_hybrid_overview(row['Ticker'], av_key)
                 if av:
                     up = round(((av['target'] - row['Precio']) / row['Precio']) * 100, 2)
                     st.markdown(f"""
                     <div class='fundamental-box'>
-                       <b>📊 Perfil Financiero Institucional (Fuente: {av['source']}):</b><br>
-                        <span class='tooltip' title='Margen Operativo TTM: Indica cuánto beneficio genera la empresa por cada dólar de venta tras pagar sus costos operativos.'>Márgenes:</span> <b class='status-ok'>{av['margin']:,.2f}%</b> | 
-                        <span class='tooltip' title='Return on Equity TTM: Mide la rentabilidad que la empresa genera con el dinero de sus accionistas.'>ROE:</span> <b class='status-ok'>{av['roe']:,.2f}%</b> | 
-                        <span class='tooltip' title='Relación Deuda/Equity: Nivel de deuda sobre capital propio. Un valor menor a 1.0 es excelente.'>Deuda/Eq:</span> <b class='status-ok'>{av['debt']:,.2f}</b><br>
-                        <span class='tooltip' title='Precio Objetivo Promedio: Valor que los analistas de Wall Street esperan que alcance la acción.'>Target Wall St:</span> <b class='status-ok'>${av['target']:,.2f}</b> | 
-                        <span class='tooltip' title='Potencial de Crecimiento: Porcentaje de subida esperado desde el precio actual hasta el target.'>Potencial:</span> <b class='status-ok'>{up:,.2f}%</b>
+                        <b>📊 Perfil Financiero Institucional:</b><br>
+                        Márgenes: <b class='status-ok'>{av['margin']:,.2f}%</b> | ROE: <b class='status-ok'>{av['roe']:,.2f}%</b> | Deuda/Eq: <b class='status-ok'>{av['debt']:,.2f}</b><br>
+                        Target Wall St: <b class='status-ok'>${av['target']:,.2f}</b> | Potencial: <b class='status-ok'>{up:,.2f}%</b>
                     </div>""", unsafe_allow_html=True)
 
             x = np.linspace(row['BE'] * 0.8, row['Precio'] * 1.2, 300)
@@ -346,8 +286,5 @@ with tab1:
             fig = go.Figure()
             fig.add_trace(go.Scatter(x=x[x >= row['BE']], y=y[x >= row['BE']], fill='tozeroy', name='Ganancia', line=dict(color='#2ecc71', width=4)))
             fig.add_trace(go.Scatter(x=x[x < row['BE']], y=y[x < row['BE']], fill='tozeroy', name='Pérdida', line=dict(color='#e74c3c', width=4)))
-            fig.add_trace(go.Scatter(x=[row['BE'], row['BE']], y=[min(y), max(y)], name="BE", line=dict(color="yellow", dash='dot')))
-            fig.add_trace(go.Scatter(x=[row['Precio'], row['Precio']], y=[min(y), max(y)], name="Precio Hoy", line=dict(color="white", width=4)))
-            if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
-            fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
+            fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10))
             st.plotly_chart(fig, use_container_width=True)
