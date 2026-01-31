@@ -5,10 +5,10 @@ import os
 import plotly.graph_objects as go
 import numpy as np
 import io
-import yfinance as yf
+import yfinance as yf  
 from datetime import datetime, timedelta
 
-# --- 1. FUNCIÓN DE SEGURIDAD (CERRADURA) ---
+# --- 1. FUNCIÓN DE SEGURIDAD (LA CERRADURA) ---
 def login_sistema():
     if "autenticado" not in st.session_state:
         st.session_state["autenticado"] = False
@@ -19,7 +19,11 @@ def login_sistema():
             u = st.text_input("Usuario")
             p = st.text_input("Contraseña", type="password")
             if st.form_submit_button("Entrar al Búnker"):
+                # ESTA LÍNEA ES LA CLAVE:
+                # Intenta leer de Secrets, si no encuentra nada, el diccionario está vacío {}
                 db_usuarios = st.secrets.get("usuarios", {})
+                
+                # Verificamos si el usuario existe en los Secrets y si la clave coincide
                 if u in db_usuarios and str(db_usuarios[u]) == p:
                     st.session_state["autenticado"] = True
                     st.session_state["usuario"] = u
@@ -28,53 +32,64 @@ def login_sistema():
                     st.error("❌ Credenciales incorrectas o usuario no registrado.")
         st.stop()
 
-# --- 2. CONFIGURACIÓN INICIAL ---
+# --- 2. CONFIGURACIÓN INICIAL (ESTO DEBE IR PRIMERO) ---
 st.set_page_config(page_title="Alpha Hunter Premium Elite", layout="wide")
+
+# Lanzamos el muro
 login_sistema()
 
-# --- 3. PERSISTENCIA INDIVIDUAL (TUS 3 PUNTOS) ---
-# Creamos nombres de archivo únicos basados en el nombre de usuario
-def get_user_path(base_name):
-    user = st.session_state.get("usuario", "default")
-    return f"{user}_{base_name}"
-
-def save_data(file_name, content):
-    path = get_user_path(file_name)
-    with open(path, "w") as f:
-        f.write(content)
-
-def load_data(file_name, default=""):
-    path = get_user_path(file_name)
-    if os.path.exists(path):
-        with open(path, "r") as f:
-            return f.read().strip()
-    return default
-
-# --- 4. ESTILO VISUAL ---
+# --- 3. TU ESTILO ORIGINAL (EL DISEÑO HERMOSO) ---
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
     .metric-card { background-color: #1b212c; padding: 20px; border-radius: 12px; border: 1px solid #30363d; text-align: center; min-height: 140px; }
     .fundamental-box { background-color: #0d1117; border: 1px solid #00f2ff; padding: 20px; border-radius: 10px; margin-top: 10px; }
-    .vola-master { background: linear-gradient(90deg, #2c1a4d 0%, #161b22 100%); border-left: 8px solid #9b59b6; padding: 25px; border-radius: 15px; margin: 20px 0; border: 1px solid #30363d; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); }
+    .vola-master { background: linear-gradient(90deg, #2c1a4d 0%, #161b22 100%); border-left: 8px solid #9b59b6; padding: 25px; border-radius: 15px; margin: 20px 0; border-top: 1px solid #30363d; border-right: 1px solid #30363d; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); }
     .status-ok { color: #2ecc71; font-weight: bold; }
     .status-danger { color: #e74c3c; font-weight: bold; }
     .tooltip { position: relative; display: inline-block; cursor: help; border-bottom: 2px dotted #00f2ff; color: #00f2ff; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 5. BARRA LATERAL ---
-st.sidebar.title("🚀 Centro de Mando")
-st.sidebar.write(f"Conectado como: **{st.session_state['usuario']}**")
+# A PARTIR DE AQUÍ SIGUE TU CÓDIGO DE PERSISTENCIA (def save_data, etc.)
 
-# Carga individual de Keys
+import streamlit as st
+import pandas as pd
+import requests
+import os
+import plotly.graph_objects as go
+import numpy as np
+import io
+import yfinance as yf  # <-- PARCHE: Importación necesaria
+from datetime import datetime, timedelta
+
+# --- 1. CONFIGURACIÓN DE ESTILO ---
+st.set_page_config(page_title="Alpha Hunter Premium Elite", layout="wide")
+login_sistema()
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; }
+    .metric-card { background-color: #1b212c; padding: 20px; border-radius: 12px; border: 1px solid #30363d; text-align: center; min-height: 140px; }
+    .fundamental-box { background-color: #0d1117; border: 1px solid #00f2ff; padding: 20px; border-radius: 10px; margin-top: 10px; }
+    .vola-master { background: linear-gradient(90deg, #2c1a4d 0%, #161b22 100%); border-left: 8px solid #9b59b6; padding: 25px; border-radius: 15px; margin: 20px 0; border-top: 1px solid #30363d; border-right: 1px solid #30363d; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); }
+    .status-ok { color: #2ecc71; font-weight: bold; }
+    .status-danger { color: #e74c3c; font-weight: bold; }
+    .tooltip { position: relative; display: inline-block; cursor: help; border-bottom: 2px dotted #00f2ff; color: #00f2ff; font-weight: bold; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- 2. PERSISTENCIA ---
+def save_data(f, k): 
+    with open(f, "w") as file: file.write(k)
+def load_data(f, default=""): 
+    return open(f, "r").read().strip() if os.path.exists(f) else default
+
+# --- 3. BARRA LATERAL ---
+st.sidebar.title("🚀 Centro de Mando")
 tradier_token = st.sidebar.text_input("Tradier Token", value=load_data(".tradier_token"), type="password")
 av_key = st.sidebar.text_input("Alpha Vantage Key", value=load_data(".av_key"), type="password")
-
-if st.sidebar.button("💾 Guardar mi Configuración"):
-    save_data(".tradier_token", tradier_token)
-    save_data(".av_key", av_key)
-    st.sidebar.success("¡Configuración guardada para tu usuario!")
+if tradier_token: save_data(".tradier_token", tradier_token)
+if av_key: save_data(".av_key", av_key)
 
 entorno = st.sidebar.selectbox("Entorno Tradier", ["Sandbox", "Brokerage"])
 API_TRADIER = "https://api.tradier.com/v1/" if entorno == "Brokerage" else "https://sandbox.tradier.com/v1/"
@@ -96,29 +111,33 @@ st.sidebar.divider()
 f_sma = st.sidebar.toggle("Solo SMA 200 (✅)", value=False)
 f_stoch = st.sidebar.toggle("Solo Stoch < 30 (1D) 📉", value=False)
 
-# --- 6. DASHBOARD DE PESTAÑAS ---
+# --- 4. DASHBOARD DE PESTAÑAS ---
 tab1, tab2, tab3 = st.tabs(["📊 SCREENER PROFESIONAL", "🏗️ BÚNKER DE TICKERS", "🧠 ACADEMIA DE VOLATILIDAD"])
 
 with tab2:
-    st.subheader("⚙️ Configuración del Búnker Personal")
-    # Lista por defecto si el usuario no tiene una guardada
-    def_list = "AAPL,AMD,AMZN,META,MSFT,NVDA,TSLA,PLTR"
-    user_list = st.text_area("Edita tu lista de tickers (separados por coma):", value=load_data(".watchlist", def_list), height=150)
-    
-    if st.button("Guardar mi Búnker"):
-        save_data(".watchlist", user_list)
-        st.success("¡Tu búnker personal ha sido actualizado!")
-        st.rerun()
-
+    st.subheader("⚙️ Configuración del Búnker")
+    def_list = "AAPL,ADBE,AGQ,AMD,AMDL,AMZN,ANET,ARM,AVGO,BA,BITO,COST,CRM,DIS,FTNT,GOOGL,HIMS,JNJ,LULU,META,MSFL,MSFT,NAIL,NKE,NOW,NVDA,NVDL,NVO,PLTR,SOXL,TECL,TLT,TQQQ,TSLA,TSLL,UNH"
+    user_list = st.text_area("Edita la lista de fundamentales (separada por coma):", value=load_data(".watchlist", def_list), height=150)
+    save_data(".watchlist", user_list)
     tickers_clean = sorted(list(set([x.strip().upper() for x in user_list.split(",") if x.strip()])))
     cols = st.columns(6)
     for i, t in enumerate(tickers_clean): cols[i % 6].caption(f"🔹 {t}")
 
 with tab3:
-    st.subheader("📖 Manual Estratégico")
-    st.markdown("Contenido educativo sobre Volatilidad...")
+    st.subheader("📖 Manual Estratégico de Volatilidad")
+    st.markdown("""
+    Para operar como un profesional, debes entender que la **Volatilidad** es el precio del miedo.
+    
+    - **IV Rank:** Indica en qué percentil está la IV actual respecto al último año. Si es **> 50%**, las primas están inusualmente caras.
+    - **ATR (Average True Range):** Define el 'ruido' diario. Si tu Strike está a menos de 2 ATRs del precio, tienes alta probabilidad de ser asignado.
+    - **HV (Volatilidad Histórica):** El movimiento real. Si **IV > HV**, existe una 'Prima de Riesgo' que el vendedor captura a su favor.
+    
+    **Ejemplo Real:**
+    - Acción a $150. Strike a $130. ATR es $3.00.
+    - Estás a $20 de distancia, lo que equivale a casi **7 días de ATR**. Si la IV es mayor que la HV y no hay Earnings, la probabilidad de éxito es masiva.
+    """)
 
-# --- 7. MOTORES DE DATOS ---
+# --- 5. MOTORES DE DATOS (CON PARCHE DE REDUNDANCIA) ---
 @st.cache_data(ttl=86400)
 def sync_global_earnings(key):
     try:
@@ -127,10 +146,11 @@ def sync_global_earnings(key):
     except: return {}
 
 @st.cache_data(ttl=86400)
-def get_hybrid_overview(sym, key):
+def get_hybrid_overview(sym, key): # <-- PARCHE: Función híbrida
+    # Intento 1: Alpha Vantage
     try:
         r = requests.get(f'https://www.alphavantage.co/query?function=OVERVIEW&symbol={sym}&apikey={key}', timeout=8).json()
-        if "Symbol" in r:
+        if "Symbol" in r and float(r.get('AnalystTargetPrice', 0)) > 0:
             return {
                 "target": round(float(r.get('AnalystTargetPrice', 0)), 2),
                 "margin": round(float(r.get('OperatingMarginTTM', 0)) * 100, 2),
@@ -140,6 +160,7 @@ def get_hybrid_overview(sym, key):
             }
     except: pass
     
+    # Intento 2: yFinance (Respaldo)
     try:
         t = yf.Ticker(sym)
         i = t.info
@@ -167,11 +188,23 @@ def get_market_techs(sym):
         return round(sma200, 2), round(sma40, 2), round(stoch.rolling(3).mean().iloc[-1], 2), round(tr.rolling(14).mean().iloc[-1], 2), round(hv, 2)
     except: return None, None, 50.0, 0.0, 0.0
 
-# --- 8. SCREENER (TAB 1) ---
+# --- 6. SCREENER ---
 with tab1:
     CATEGORIAS = {
+        "🌐 SCANNER GLOBAL": ["SPY","TSLA","NVDA","AAPL","META","AMD","MSFT","PLTR","AMZN","NFLX","XOM","BA","JPM","DIS","GOOGL"],
         "🌐 WATCHLIST PRO": tickers_clean,
-        "🌐 SCANNER GLOBAL": ["SPY","TSLA","NVDA","AAPL","META","AMD","MSFT","PLTR","AMZN","NFLX"],
+        "📊 ETFs & Índices": ["SPY", "QQQ", "IWM", "DIA", "TLT", "XLE", "XLF", "XLV", "XLI", "XLK", "XLU", "XLRE"],
+        "🚀 HIGH VOL": ["MSTR", "MARA", "COIN", "SOXL", "AFRM", "ROKU", "PLTR", "TQQQ"],
+        "💻 TECNOLOGÍA": ["MSFT", "AAPL", "NVDA", "AMD", "AVGO", "ORCL", "CRM", "INTC", "SMCI", "NOW", "ANET"],
+        "🛍️ CONSUMO": ["AMZN", "TSLA", "HD", "MCD", "NKE", "SBUX", "BKNG", "COST", "LULU", "NVO"],
+        "💊 SALUD": ["LLY", "JNJ", "UNH", "PFE", "ABBV", "MRK", "TMO", "ISRG"],
+        "🏦 FINANZAS": ["JPM", "BAC", "GS", "MS", "V", "MA", "AXP", "WFC"],
+        "🏗️ INDUSTRIAL": ["BA", "CAT", "GE", "UNP", "HON", "UPS", "LMT", "RTX", "DE"],
+        "🛢️ ENERGÍA": ["XOM", "CVX", "COP", "SLB", "XLE", "MPC", "PSX", "VLO"],
+        "🏢 INMOBILIARIO": ["PLD", "AMT", "EQIX", "CCI", "WY", "SPG", "O"],
+        "⛏️ MATERIALES": ["LIN", "APD", "NEM", "FCX", "SHW", "CTVA", "ECL"],
+        "🔌 UTILITIES": ["NEE", "DUK", "SO", "D", "AEP", "EXC", "AWK"],
+        "📡 COMUNICACIONES": ["GOOGL", "META", "NFLX", "DIS", "TMUS", "VZ", "CMCSA"],
         "🎯 INDIVIDUAL": ["CUSTOM"]
     }
     
@@ -180,8 +213,114 @@ with tab1:
     tickers_lista = [c_s2.text_input("Ticker", "NVDA").upper()] if sector_sel == "🎯 INDIVIDUAL" or estrategia == "Covered Call (CC)" else CATEGORIAS[sector_sel]
 
     earnings_db = sync_global_earnings(av_key) if av_key else {}
-
     if st.button("🚀 INICIAR BARRIDO"):
-        # Lógica de escaneo (se mantiene igual a tu código original pero usando las keys de sesión)
-        st.write("Buscando oportunidades...")
-        # ... resto del bucle de escaneo ...
+        res_list = []
+        prog = st.progress(0)
+        today = datetime.now()
+        for idx, sym in enumerate(tickers_lista):
+            q_res = requests.get(f"{API_TRADIER}markets/quotes", params={'symbols': sym}, headers={'Authorization': f'Bearer {tradier_token}', 'Accept': 'application/json'}).json()
+            if not q_res or 'quotes' not in q_res or not q_res['quotes']: continue
+            price = float(q_res['quotes']['quote'].get('last', 0))
+            sma200, sma40, stoch_v, atr_v, hv_v = get_market_techs(sym)
+            
+            e_date = earnings_db.get(sym)
+            exps = requests.get(f"{API_TRADIER}markets/options/expirations", params={'symbol': sym}, headers={'Authorization': f'Bearer {tradier_token}', 'Accept': 'application/json'}).json()
+            if not exps or 'expirations' not in exps: continue
+            for d_str in exps['expirations']['date']:
+                dte = (datetime.strptime(d_str, "%Y-%m-%d") - today).days
+                if dte_r[0] <= dte <= dte_r[1]:
+                    chain = requests.get(f"{API_TRADIER}markets/options/chains", params={'symbol': sym, 'expiration': d_str, 'greeks': 'true'}, headers={'Authorization': f'Bearer {tradier_token}', 'Accept': 'application/json'}).json()
+                    if not chain or 'options' not in chain or not chain['options']: continue
+                    opts = chain['options']['option']
+                    if isinstance(opts, dict): opts = [opts]
+                    for opt in opts:
+                        if opt['option_type'] == ('put' if estrategia == "Cash Secured Put (CSP)" else 'call'):
+                            strike = float(opt['strike'])
+                            premium = round(float((opt.get('bid', 0) + opt.get('ask', 0)) / 2), 2)
+                            if estrategia == "Cash Secured Put (CSP)":
+                                cap_r = round((strike - premium) * 100, 2)
+                                if cap_r > max_cap_input: continue
+                                delta = round(float(opt.get('greeks', {}).get('delta', 0)), 2)
+                                if not (delta_r[0] <= delta <= delta_r[1]): continue
+                                base = strike
+                            else:
+                                if s_obj > 0 and strike != s_obj: continue
+                                delta, base = 0.0, (c_base if c_base > 0 else price)
+                            
+                            if f_sma and sma200 and strike >= sma200: continue
+                            if f_stoch and stoch_v >= 30: continue
+                            
+                            roi_a = round(((premium / base) * 100) * (365 / max(dte, 1)), 2)
+                            if roi_a >= roi_min_f:
+                                res_list.append({
+                                    "Ticker": sym, "Exp": d_str, "DTE": dte, "Precio": price, "Strike": strike, "Prima": premium, 
+                                    "Ret. %": round((premium/base)*100, 2), "ROI Ann %": roi_a, "Delta": delta, 
+                                    "POP %": round((1 + delta)*100, 2), "BE": round(strike - premium if estrategia == "Cash Secured Put (CSP)" else price - premium, 2),
+                                    "Earnings": "SÍ" if e_date and d_str >= e_date >= today.strftime('%Y-%m-%d') else "NO", 
+                                    "earn_date": e_date, "Stoch": stoch_v, "sma200_val": sma200, "sma40_val": sma40, "atr_val": atr_v, "hv": hv_v,
+                                    "iv": (opt.get('greeks', {}).get('mid_iv', 0) * 100) if isinstance(opt.get('greeks'), dict) else 0.0
+                                })
+            prog.progress((idx + 1) / len(tickers_lista))
+        st.session_state['res'] = pd.DataFrame(res_list)
+
+    if 'res' in st.session_state and not st.session_state['res'].empty:
+        df = st.session_state['res']
+        df_v = df.copy()
+        df_v['SMA 200'] = df_v.apply(lambda r: "✅" if r['sma200_val'] and r['Strike'] < r['sma200_val'] else "⚠️", axis=1)
+        df_v['Stoch 📉'] = df_v['Stoch'].map(lambda v: "✅" if v < 30 else "⚠️")
+        for col in ["Precio", "Strike", "Prima", "BE", "Delta", "ROI Ann %", "Ret. %", "POP %"]:
+            df_v[col] = df_v[col].map("{:,.2f}".format)
+        
+        event = st.dataframe(df_v[["Ticker", "Exp", "DTE", "Precio", "Strike", "Prima", "Ret. %", "ROI Ann %", "Delta", "POP %", "BE", "Earnings", "SMA 200", "Stoch 📉"]].style.map(lambda v: f'background-color: {"#721c24" if v == "SÍ" else "#155724"}; color: white', subset=['Earnings']), use_container_width=True, hide_index=True, on_select="rerun", selection_mode="single-row")
+
+        if event.selection.rows and estrategia == "Cash Secured Put (CSP)":
+            row = df.iloc[event.selection.rows[0]]
+            st.divider()
+            st.subheader(f"🔍 Ficha Sniper: {row['Ticker']} - Strike ${row['Strike']:,.2f}")
+            
+            c1, c2, c3, c4, c5 = st.columns(5)
+            with c1: st.markdown(f"<div class='metric-card'><b style='color:#2ecc71'>ROI ANUAL</b><br><h3>{row['ROI Ann %']:,.2f}%</h3><b>DTE: {row['DTE']}</b></div>", unsafe_allow_html=True)
+            with c2: st.markdown(f"<div class='metric-card'><b>BLOQUEADO</b><br><h3>${(row['Strike']*100):,.2f}</h3><b>PRIMA: ${(row['Prima']*100):,.2f}</b></div>", unsafe_allow_html=True)
+            with c3: st.markdown(f"<div class='metric-card'><b style='color:#e74c3c'>CAPITAL RIESGO</b><br><h3>${(row['Strike'] - row['Prima']) * 100:,.2f}</h3><b>BE: ${row['BE']:,.2f}</b></div>", unsafe_allow_html=True)
+            with c4: st.markdown(f"<div class='metric-card'><b>POP / STOCH</b><br><h3>{row['POP %']:,.2f}%</h3><b>STOCH: {row['Stoch']:,.2f} {'✅' if row['Stoch'] < 30 else '⚠️'}</b></div>", unsafe_allow_html=True)
+            with c5: st.markdown(f"<div class='metric-card'><b>EARNINGS / SMA40</b><br><h3 style='color:{'#e74c3c' if row['Earnings']=='SÍ' else '#2ecc71'}'>{row['Earnings']}</h3><b>SMA40: {'✅' if row['Precio'] > row['sma40_val'] else '⚠️'}</b></div>", unsafe_allow_html=True)
+
+            st.markdown(f"""
+            <div class='vola-master'>
+                <h3 style='margin:0; color:#9b59b6;'>📡 Radar de Volatilidad & Riesgo</h3>
+                <table style='width:100%; border-collapse: collapse; margin-top:15px;'>
+                    <tr style='font-size:18px;'>
+                        <td style='padding:10px;'><b>IV Actual:</b> {row['iv']:,.2f}%</td>
+                        <td style='padding:10px;'><b>HV (Histórica):</b> {row['hv']:,.2f}%</td>
+                        <td style='padding:10px;'><b>ATR (14D):</b> ${row['atr_val']:,.2f}</td>
+                        <td style='padding:10px; background: rgba(0,242,255,0.1); border-radius:10px; text-align:center;'>
+                            {'🎯 <b style="color:#2ecc71">RECOMENDACIÓN: CSP CONVENIENTE</b>' if row['iv'] > row['hv'] and row['Earnings'] == 'NO' else '⚖️ <b style="color:#f39c12">RECOMENDACIÓN: EVALUAR RIESGO</b>'}
+                        </td>
+                    </tr>
+                </table>
+            </div>""", unsafe_allow_html=True)
+
+            if st.button(f"📊 Ver Análisis de Negocio para {row['Ticker']}"):
+                av = get_hybrid_overview(row['Ticker'], av_key) # <-- LLAMADA AL PARCHE HÍBRIDO
+                if av:
+                    up = round(((av['target'] - row['Precio']) / row['Precio']) * 100, 2)
+                    st.markdown(f"""
+                    <div class='fundamental-box'>
+                       <b>📊 Perfil Financiero Institucional (Fuente: {av['source']}):</b><br>
+                        <span class='tooltip' title='Margen Operativo TTM: Indica cuánto beneficio genera la empresa por cada dólar de venta tras pagar sus costos operativos.'>Márgenes:</span> <b class='status-ok'>{av['margin']:,.2f}%</b> | 
+                        <span class='tooltip' title='Return on Equity TTM: Mide la rentabilidad que la empresa genera con el dinero de sus accionistas.'>ROE:</span> <b class='status-ok'>{av['roe']:,.2f}%</b> | 
+                        <span class='tooltip' title='Relación Deuda/Equity: Nivel de deuda sobre capital propio. Un valor menor a 1.0 es excelente.'>Deuda/Eq:</span> <b class='status-ok'>{av['debt']:,.2f}</b><br>
+                        <span class='tooltip' title='Precio Objetivo Promedio: Valor que los analistas de Wall Street esperan que alcance la acción.'>Target Wall St:</span> <b class='status-ok'>${av['target']:,.2f}</b> | 
+                        <span class='tooltip' title='Potencial de Crecimiento: Porcentaje de subida esperado desde el precio actual hasta el target.'>Potencial:</span> <b class='status-ok'>{up:,.2f}%</b>
+                    </div>""", unsafe_allow_html=True)
+
+            x = np.linspace(row['BE'] * 0.8, row['Precio'] * 1.2, 300)
+            y = np.where(x >= row['Strike'], row['Prima'] * 100, (x - row['Strike'] + row['Prima']) * 100)
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=x[x >= row['BE']], y=y[x >= row['BE']], fill='tozeroy', name='Ganancia', line=dict(color='#2ecc71', width=4)))
+            fig.add_trace(go.Scatter(x=x[x < row['BE']], y=y[x < row['BE']], fill='tozeroy', name='Pérdida', line=dict(color='#e74c3c', width=4)))
+            fig.add_trace(go.Scatter(x=[row['BE'], row['BE']], y=[min(y), max(y)], name="BE", line=dict(color="yellow", dash='dot')))
+            fig.add_trace(go.Scatter(x=[row['Precio'], row['Precio']], y=[min(y), max(y)], name="Precio Hoy", line=dict(color="white", width=4)))
+            if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
+            fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
+            st.plotly_chart(fig, use_container_width=True)
