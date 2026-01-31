@@ -4,11 +4,31 @@ import requests
 import os
 import plotly.graph_objects as go
 import numpy as np
-import io
-import yfinance as yf  
+import yfinance as yf
 from datetime import datetime, timedelta
 
-# --- 1. FUNCIÓN DE SEGURIDAD (LA CERRADURA) ---
+# --- 1. CONFIGURACIÓN INICIAL (SIEMPRE PRIMERO) ---
+st.set_page_config(page_title="Alpha Hunter Premium Elite", layout="wide")
+
+# --- 2. FUNCIONES DE PERSISTENCIA POR USUARIO ---
+def get_user_path(filename):
+    # Esto crea archivos tipo: Jorge_.tradier_token
+    user = st.session_state.get("usuario", "invitado")
+    return f"{user}_{filename}"
+
+def save_data(filename, data):
+    path = get_user_path(filename)
+    with open(path, "w") as f:
+        f.write(data)
+
+def load_data(filename):
+    path = get_user_path(filename)
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return f.read().strip()
+    return ""
+
+# --- 3. SISTEMA DE LOGIN CONECTADO A SECRETS ---
 def login_sistema():
     if "autenticado" not in st.session_state:
         st.session_state["autenticado"] = False
@@ -19,18 +39,49 @@ def login_sistema():
             u = st.text_input("Usuario")
             p = st.text_input("Contraseña", type="password")
             if st.form_submit_button("Entrar al Búnker"):
-                # ESTA LÍNEA ES LA CLAVE:
-                # Intenta leer de Secrets, si no encuentra nada, el diccionario está vacío {}
-                db_usuarios = st.secrets.get("usuarios", {})
-                
-                # Verificamos si el usuario existe en los Secrets y si la clave coincide
+                # Lee los usuarios desde el panel de Secrets de la web
+                db_usuarios = st.secrets.get("usuarios", {"Jorge": "JZ1966"})
                 if u in db_usuarios and str(db_usuarios[u]) == p:
                     st.session_state["autenticado"] = True
                     st.session_state["usuario"] = u
                     st.rerun()
                 else:
-                    st.error("❌ Credenciales incorrectas o usuario no registrado.")
+                    st.error("Credenciales incorrectas")
         st.stop()
+
+# Ejecutamos el login
+login_sistema()
+
+# --- 4. CARGA DE CONFIGURACIÓN DEL USUARIO ---
+# Cada uno tiene su propio token y su propio búnker
+tradier_token = load_data(".tradier_token")
+av_key = load_data(".av_key")
+
+# Cargar Búnker personalizado
+bunker_path = get_user_path(".watchlist")
+if os.path.exists(bunker_path):
+    with open(bunker_path, "r") as f:
+        watchlist = [line.strip() for line in f.readlines() if line.strip()]
+else:
+    watchlist = ["SPY", "QQQ", "AAPL", "MSFT"] # Lista por defecto
+
+# --- 5. INTERFAZ LATERAL ---
+st.sidebar.title(f"🚀 Panel de {st.session_state['usuario']}")
+new_token = st.sidebar.text_input("Tradier Token", value=tradier_token, type="password")
+new_key = st.sidebar.text_input("Alpha Vantage Key", value=av_key, type="password")
+
+if st.sidebar.button("💾 Guardar mi Configuración"):
+    save_data(".tradier_token", new_token)
+    save_data(".av_key", new_key)
+    st.sidebar.success("¡Datos guardados para tu usuario!")
+    st.rerun()
+
+st.sidebar.divider()
+if st.sidebar.button("Cerrar Sesión"):
+    st.session_state["autenticado"] = False
+    st.rerun()
+
+# --- A PARTIR DE AQUÍ SIGUE TU CÓDIGO DE ESTILOS Y PESTAÑAS ---
 
 # --- 2. CONFIGURACIÓN INICIAL (ESTO DEBE IR PRIMERO) ---
 st.set_page_config(page_title="Alpha Hunter Premium Elite", layout="wide")
@@ -345,4 +396,5 @@ with tab1:
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
 
             st.plotly_chart(fig, use_container_width=True)
+
 
