@@ -78,18 +78,45 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. PERSISTENCIA ---
-def save_data(f, k): 
-    with open(f, "w") as file: file.write(k)
-def load_data(f, default=""): 
-    return open(f, "r").read().strip() if os.path.exists(f) else default
+# --- 2. FUNCIONES CON MEMORIA POR USUARIO ---
+
+def get_user_file(base_name):
+    """Crea un nombre de archivo único por usuario"""
+    usuario = st.session_state.get("usuario", "anonimo")
+    return f"{usuario}_{base_name}"
+
+def save_data(file_name, data):
+    # Ahora guardará: Jorge_.tradier_token o Deivis_.tradier_token
+    user_file = get_user_file(file_name)
+    with open(user_file, "w") as f:
+        f.write(data)
+
+def load_data(file_name):
+    user_file = get_user_file(file_name)
+    if os.path.exists(user_file):
+        with open(user_file, "r") as f:
+            return f.read().strip()
+    return ""
 
 # --- 3. BARRA LATERAL ---
 st.sidebar.title("🚀 Centro de Mando")
-tradier_token = st.sidebar.text_input("Tradier Token", value=load_data(".tradier_token"), type="password")
-av_key = st.sidebar.text_input("Alpha Vantage Key", value=load_data(".av_key"), type="password")
-if tradier_token: save_data(".tradier_token", tradier_token)
-if av_key: save_data(".av_key", av_key)
+st.sidebar.write(f"👤 Usuario: **{st.session_state['usuario']}**")
+
+# Solo cargamos datos guardados si el usuario es Jorge (Tú)
+# Para Deivis y Camilo, empezará en blanco
+es_admin = st.session_state['usuario'] == "Jorge"
+
+token_inicial = load_data(".tradier_token") if es_admin else ""
+av_inicial = load_data(".av_key") if es_admin else ""
+
+tradier_token = st.sidebar.text_input("Tradier Token", value=token_inicial, type="password")
+av_key = st.sidebar.text_input("Alpha Vantage Key", value=av_inicial, type="password")
+
+# Solo guardamos permanentemente si tú (Jorge) haces cambios
+if tradier_token and es_admin: 
+    save_data(".tradier_token", tradier_token)
+if av_key and es_admin: 
+    save_data(".av_key", av_key)
 
 entorno = st.sidebar.selectbox("Entorno Tradier", ["Sandbox", "Brokerage"])
 API_TRADIER = "https://api.tradier.com/v1/" if entorno == "Brokerage" else "https://sandbox.tradier.com/v1/"
