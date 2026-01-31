@@ -102,17 +102,13 @@ with tab2:
     for i, t in enumerate(tickers_clean): cols[i % 6].caption(f"🔹 {t}")
 
 with tab3:
-   st.subheader("📖 Manual Estratégico de Volatilidad")
+    st.subheader("📖 Manual Estratégico de Volatilidad")
     st.markdown("""
     Para operar como un profesional, debes entender que la **Volatilidad** es el precio del miedo.
     
     - **IV Rank:** Indica en qué percentil está la IV actual respecto al último año. Si es **> 50%**, las primas están inusualmente caras.
     - **ATR (Average True Range):** Define el 'ruido' diario. Si tu Strike está a menos de 2 ATRs del precio, tienes alta probabilidad de ser asignado.
     - **HV (Volatilidad Histórica):** El movimiento real. Si **IV > HV**, existe una 'Prima de Riesgo' que el vendedor captura a su favor.
-    
-    **Ejemplo Real:**
-    - Acción a $150. Strike a $130. ATR es $3.00.
-    - Estás a $20 de distancia, lo que equivale a casi **7 días de ATR**. Si la IV es mayor que la HV y no hay Earnings, la probabilidad de éxito es masiva.
     """)
 
 # --- MOTORES DE DATOS ---
@@ -169,16 +165,6 @@ with tab1:
         "🌐 WATCHLIST PRO": tickers_clean,
         "📊 ETFs & Índices": ["SPY", "QQQ", "IWM", "DIA", "TLT", "XLE", "XLF", "XLV", "XLI", "XLK", "XLU", "XLRE"],
         "🚀 HIGH VOL": ["MSTR", "MARA", "COIN", "SOXL", "AFRM", "ROKU", "PLTR", "TQQQ"],
-        "💻 TECNOLOGÍA": ["MSFT", "AAPL", "NVDA", "AMD", "AVGO", "ORCL", "CRM", "INTC", "SMCI", "NOW", "ANET"],
-        "🛍️ CONSUMO": ["AMZN", "TSLA", "HD", "MCD", "NKE", "SBUX", "BKNG", "COST", "LULU", "NVO"],
-        "💊 SALUD": ["LLY", "JNJ", "UNH", "PFE", "ABBV", "MRK", "TMO", "ISRG"],
-        "🏦 FINANZAS": ["JPM", "BAC", "GS", "MS", "V", "MA", "AXP", "WFC"],
-        "🏗️ INDUSTRIAL": ["BA", "CAT", "GE", "UNP", "HON", "UPS", "LMT", "RTX", "DE"],
-        "🛢️ ENERGÍA": ["XOM", "CVX", "COP", "SLB", "XLE", "MPC", "PSX", "VLO"],
-        "🏢 INMOBILIARIO": ["PLD", "AMT", "EQIX", "CCI", "WY", "SPG", "O"],
-        "⛏️ MATERIALES": ["LIN", "APD", "NEM", "FCX", "SHW", "CTVA", "ECL"],
-        "🔌 UTILITIES": ["NEE", "DUK", "SO", "D", "AEP", "EXC", "AWK"],
-        "📡 COMUNICACIONES": ["GOOGL", "META", "NFLX", "DIS", "TMUS", "VZ", "CMCSA"],
         "🎯 INDIVIDUAL": ["CUSTOM"]
     }
     
@@ -294,4 +280,3 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
-
