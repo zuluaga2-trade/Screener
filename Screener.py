@@ -323,3 +323,4 @@ with tab1:
             fig.add_trace(go.Scatter(x=[row['Precio'], row['Precio']], y=[min(y), max(y)], name="Precio Hoy", line=dict(color="white", width=4)))
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
+            st.plotly_chart(fig, use_container_width=True)
