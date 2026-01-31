@@ -79,17 +79,33 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- 2. PERSISTENCIA ---
-def save_data(f, k): 
-    with open(f, "w") as file: file.write(k)
-def load_data(f, default=""): 
-    return open(f, "r").read().strip() if os.path.exists(f) else default
+def save_data(file_name, data):
+    # Esto crea un archivo como 'Jorge_.tradier_token'
+    usuario = st.session_state.get("usuario", "invitado")
+    with open(f"{usuario}_{file_name}", "w") as f:
+        f.write(data)
+
+def load_data(file_name):
+    usuario = st.session_state.get("usuario", "invitado")
+    user_file = f"{usuario}_{file_name}"
+    if os.path.exists(user_file):
+        with open(user_file, "r") as f:
+            return f.read().strip()
+    return ""
 
 # --- 3. BARRA LATERAL ---
 st.sidebar.title("🚀 Centro de Mando")
-tradier_token = st.sidebar.text_input("Tradier Token", value=load_data(".tradier_token"), type="password")
-av_key = st.sidebar.text_input("Alpha Vantage Key", value=load_data(".av_key"), type="password")
-if tradier_token: save_data(".tradier_token", tradier_token)
-if av_key: save_data(".av_key", av_key)
+# Carga automática de las llaves del usuario que inició sesión
+token_guardado = load_data(".tradier_token")
+key_guardada = load_data(".av_key")
+
+tradier_token = st.sidebar.text_input("Tradier Token", value=token_guardado, type="password")
+av_key = st.sidebar.text_input("Alpha Vantage Key", value=key_guardada, type="password")
+
+if st.sidebar.button("Guardar mis llaves"):
+    save_data(".tradier_token", tradier_token)
+    save_data(".av_key", av_key)
+    st.sidebar.success(f"¡Llaves de {st.session_state['usuario']} guardadas!")
 
 entorno = st.sidebar.selectbox("Entorno Tradier", ["Sandbox", "Brokerage"])
 API_TRADIER = "https://api.tradier.com/v1/" if entorno == "Brokerage" else "https://sandbox.tradier.com/v1/"
@@ -117,8 +133,12 @@ tab1, tab2, tab3 = st.tabs(["📊 SCREENER PROFESIONAL", "🏗️ BÚNKER DE TIC
 with tab2:
     st.subheader("⚙️ Configuración del Búnker")
     def_list = "AAPL,ADBE,AGQ,AMD,AMDL,AMZN,ANET,ARM,AVGO,BA,BITO,COST,CRM,DIS,FTNT,GOOGL,HIMS,JNJ,LULU,META,MSFL,MSFT,NAIL,NKE,NOW,NVDA,NVDL,NVO,PLTR,SOXL,TECL,TLT,TQQQ,TSLA,TSLL,UNH"
-    user_list = st.text_area("Edita la lista de fundamentales (separada por coma):", value=load_data(".watchlist", def_list), height=150)
-    save_data(".watchlist", user_list)
+   if os.path.exists(nombre_archivo_bunker):
+    with open(nombre_archivo_bunker, "r") as f:
+        watchlist = [line.strip() for line in f.readlines()]
+else:
+    # Si el usuario es nuevo, le damos esta lista por defecto
+    watchlist = ["SPY", "QQQ", "AAPL", "MSFT", "NVDA"]
     tickers_clean = sorted(list(set([x.strip().upper() for x in user_list.split(",") if x.strip()])))
     cols = st.columns(6)
     for i, t in enumerate(tickers_clean): cols[i % 6].caption(f"🔹 {t}")
@@ -325,3 +345,4 @@ with tab1:
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
 
             st.plotly_chart(fig, use_container_width=True)
+
