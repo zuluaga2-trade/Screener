@@ -306,7 +306,7 @@ with tab1:
                     up = round(((av['target'] - row['Precio']) / row['Precio']) * 100, 2)
                     st.markdown(f"""
                     <div class='fundamental-box'>
-                        <b>📊 Perfil Financiero Institucional (Fuente: {av['source']}):</b><br>
+                       <b>📊 Perfil Financiero Institucional (Fuente: {av['source']}):</b><br>
                         <span class='tooltip' title='Margen Operativo TTM: Indica cuánto beneficio genera la empresa por cada dólar de venta tras pagar sus costos operativos.'>Márgenes:</span> <b class='status-ok'>{av['margin']:,.2f}%</b> | 
                         <span class='tooltip' title='Return on Equity TTM: Mide la rentabilidad que la empresa genera con el dinero de sus accionistas.'>ROE:</span> <b class='status-ok'>{av['roe']:,.2f}%</b> | 
                         <span class='tooltip' title='Relación Deuda/Equity: Nivel de deuda sobre capital propio. Un valor menor a 1.0 es excelente.'>Deuda/Eq:</span> <b class='status-ok'>{av['debt']:,.2f}</b><br>
