@@ -270,7 +270,7 @@ def get_market_techs(sym):
 with tab1:
     CATEGORIAS = {
         "🌐 SCANNER GLOBAL": ["SPY","TSLA","NVDA","AAPL","META","AMD","MSFT","PLTR","AMZN","NFLX","XOM","BA","JPM","DIS","GOOGL"],
-        "🌐 WATCHLIST PRO": tickers_clean,
+        "🌐 MI BÚNKER": tickers_clean,
         "📊 ETFs & Índices": ["SPY", "QQQ", "IWM", "DIA", "TLT", "XLE", "XLF", "XLV", "XLI", "XLK", "XLU", "XLRE"],
         "🚀 HIGH VOL": ["MSTR", "MARA", "COIN", "SOXL", "AFRM", "ROKU", "PLTR", "TQQQ"],
         "💻 TECNOLOGÍA": ["MSFT", "AAPL", "NVDA", "AMD", "AVGO", "ORCL", "CRM", "INTC", "SMCI", "NOW", "ANET"],
@@ -416,5 +416,6 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
 
