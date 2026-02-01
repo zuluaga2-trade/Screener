@@ -132,12 +132,27 @@ tab1, tab2, tab3 = st.tabs(["📊 SCREENER PROFESIONAL", "🏗️ BÚNKER DE TIC
 
 with tab2:
     st.subheader("⚙️ Configuración del Búnker")
+    # Lista por defecto si el archivo está vacío
     def_list = "AAPL,ADBE,AGQ,AMD,AMDL,AMZN,ANET,ARM,AVGO,BA,BITO,COST,CRM,DIS,FTNT,GOOGL,HIMS,JNJ,LULU,META,MSFL,MSFT,NAIL,NKE,NOW,NVDA,NVDL,NVO,PLTR,SOXL,TECL,TLT,TQQQ,TSLA,TSLL,UNH"
-    user_list = st.text_area("Edita la lista de fundamentales (separada por coma):", value=load_data(".watchlist", def_list), height=150)
-    save_data(".watchlist", user_list)
+    
+    # Cargamos la lista actual del usuario
+    current_watchlist = load_data("watchlist", def_list)
+    
+    # Área de texto para editar
+    user_list = st.text_area("Edita la lista de fundamentales (separada por coma):", value=current_watchlist, height=150)
+    
+    # BOTÓN CLAVE: Solo guarda cuando el usuario hace clic
+    if st.button("💾 Guardar Mi Búnker Personalizado"):
+        save_data("watchlist", user_list)
+        st.success("✅ ¡Lista guardada correctamente para tu usuario!")
+        st.rerun() # Forzamos recarga para que el screener vea los cambios
+    
+    # Visualización de los tickers actuales
     tickers_clean = sorted(list(set([x.strip().upper() for x in user_list.split(",") if x.strip()])))
+    st.divider()
     cols = st.columns(6)
-    for i, t in enumerate(tickers_clean): cols[i % 6].caption(f"🔹 {t}")
+    for i, t in enumerate(tickers_clean): 
+        cols[i % 6].caption(f"🔹 {t}")
 
 with tab3:
     st.subheader("📖 Manual Estratégico de Volatilidad")
@@ -340,5 +355,6 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
 
