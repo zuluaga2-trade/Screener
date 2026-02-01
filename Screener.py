@@ -386,12 +386,27 @@ with tab1:
                 </table>
             </div>""", unsafe_allow_html=True)
 
-            if st.button(f"📊 Ver Análisis de Negocio para {row['Ticker']}"):
-                av = get_hybrid_overview(row['Ticker'], av_key) # <-- LLAMADA AL PARCHE HÍBRIDO
-                if av:
-                    up = round(((av['target'] - row['Precio']) / row['Precio']) * 100, 2)
-                    st.markdown(f"""
-                    <div class='fundamental-box'>
+            # --- BOTONES DE ACCIÓN ---
+            c_btn1, c_btn2 = st.columns(2)
+            
+            with c_btn1:
+                if st.button(f"📊 Análisis de Negocio {row['Ticker']}", use_container_width=True):
+                    av = get_hybrid_overview(row['Ticker'], av_key)
+                    if av:
+                        up = round(((av['target'] - row['Precio']) / row['Precio']) * 100, 2)
+                        st.markdown(f"""
+                        <div class='fundamental-box'>
+                           <b>📊 Perfil Financiero (Fuente: {av['source']}):</b><br>
+                            Márgenes: <b class='status-ok'>{av['margin']}%</b> | ROE: <b class='status-ok'>{av['roe']}%</b> | Deuda/Eq: <b class='status-ok'>{av['debt']}</b><br>
+                            Target Wall St: <b class='status-ok'>${av['target']}</b> | Potencial: <b class='status-ok'>{up}%</b>
+                        </div>""", unsafe_allow_html=True)
+
+            with c_btn2:
+                # NUEVO: Botón de compartir
+                resumen_txt = generar_texto_compartir(row, estrategia)
+                st.copy_to_clipboard(resumen_txt) # Copia directa al portapapeles
+                if st.button("🔗 Copiar Alerta para Compartir", use_container_width=True):
+                    st.toast("✅ Resumen copiado al portapapeles. ¡Pégalo en WhatsApp o Telegram!")
                        <b>📊 Perfil Financiero Institucional (Fuente: {av['source']}):</b><br>
                         <span class='tooltip' title='Margen Operativo TTM: Indica cuánto beneficio genera la empresa por cada dólar de venta tras pagar sus costos operativos.'>Márgenes:</span> <b class='status-ok'>{av['margin']:,.2f}%</b> | 
                         <span class='tooltip' title='Return on Equity TTM: Mide la rentabilidad que la empresa genera con el dinero de sus accionistas.'>ROE:</span> <b class='status-ok'>{av['roe']:,.2f}%</b> | 
@@ -411,6 +426,7 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
 
 
