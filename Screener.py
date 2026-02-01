@@ -384,22 +384,23 @@ with tab1:
                 </table>
             </div>""", unsafe_allow_html=True)
 
-                  # --- SECCIÓN DE HERRAMIENTAS (ABRIR/CERRAR) ---
-          with st.expander(f"📊 Ver Análisis de Negocio para {row['Ticker']}", expanded=False):
+                 # --- SECCIÓN DE HERRAMIENTAS (CON CIERRE MANUAL) ---
+            with st.expander(f"📊 Ver Análisis de Negocio para {row['Ticker']}", expanded=False):
                 av = get_hybrid_overview(row['Ticker'], av_key)
                 if av:
                     up = round(((av['target'] - row['Precio']) / row['Precio']) * 100, 2)
                     st.markdown(f"""
                     <div class='fundamental-box'>
-                         <b>📊 Perfil Financiero (Fuente: {av['source']}):</b><br>
-                          Márgenes: <b class='status-ok'>{av['margin']:,.2f}%</b> | 
-                          ROE: <b class='status-ok'>{av['roe']:,.2f}%</b> | 
-                          Deuda/Eq: <b class='status-ok'>{av['debt']:,.2f}</b><br>
-                          Target Wall St: <b class='status-ok'>${av['target']:,.2f}</b> | 
-                          Potencial: <b class='status-ok'>{up:,.2f}%</b>
-                   </div>""", unsafe_allow_html=True)
+                       <b>📊 Perfil Financiero (Fuente: {av['source']}):</b><br>
+                        Márgenes: <b class='status-ok'>{av['margin']:,.2f}%</b> | 
+                        ROE: <b class='status-ok'>{av['roe']:,.2f}%</b> | 
+                        Deuda/Eq: <b class='status-ok'>{av['debt']:,.2f}</b><br>
+                        Target Wall St: <b class='status-ok'>${av['target']:,.2f}</b> | 
+                        Potencial: <b class='status-ok'>{up:,.2f}%</b>
+                    </div>""", unsafe_allow_html=True)
                 else:
                     st.warning("No se pudieron obtener datos fundamentales.")
+
             with st.expander("🔗 Compartir esta Alerta", expanded=False):
                 resumen_txt = generar_texto_compartir(row, estrategia)
                 st.write("Copia el texto para pegarlo en WhatsApp o Telegram:")
@@ -416,6 +417,7 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
 
 
