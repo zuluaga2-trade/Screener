@@ -255,6 +255,19 @@ def get_market_techs(sym):
         return round(sma200, 2), round(sma40, 2), round(stoch.rolling(3).mean().iloc[-1], 2), round(tr.rolling(14).mean().iloc[-1], 2), round(hv, 2)
     except: return None, None, 50.0, 0.0, 0.0
 
+def generar_texto_compartir(row, estrategia):
+    texto = f"🦅 *ALPHA HUNTER ELITE - ALERTA DE POSICIÓN*\n\n"
+    texto += f"🎯 **Ticker:** {row['Ticker']}\n"
+    texto += f"🛠 **Estrategia:** {estrategia}\n"
+    texto += f"📅 **Expira:** {row['Exp']} ({row['DTE']} DTE)\n"
+    texto += f"💰 **Strike:** ${row['Strike']}\n"
+    texto += f"💵 **Prima:** ${row['Prima']}\n"
+    texto += f"📈 **ROI Anual:** {row['ROI Ann %']}%\n"
+    texto += f"🛡 **Breakeven:** ${row['BE']}\n"
+    texto += f"📊 **POP:** {row['POP %']}%\n"
+    texto += f"\n🔥 *Análisis generado por Alpha Hunter Elite*"
+    return texto
+
 # --- 6. SCREENER ---
 with tab1:
     CATEGORIAS = {
@@ -387,6 +400,28 @@ with tab1:
                         <span class='tooltip' title='Potencial de Crecimiento: Porcentaje de subida esperado desde el precio actual hasta el target.'>Potencial:</span> <b class='status-ok'>{up:,.2f}%</b>
                     </div>""", unsafe_allow_html=True)
 
+            # --- BOTONES DE ACCIÓN ---
+            c_btn1, c_btn2 = st.columns(2)
+            
+            with c_btn1:
+                if st.button(f"📊 Análisis de Negocio {row['Ticker']}", use_container_width=True):
+                    av = get_hybrid_overview(row['Ticker'], av_key)
+                    if av:
+                        up = round(((av['target'] - row['Precio']) / row['Precio']) * 100, 2)
+                        st.markdown(f"""
+                        <div class='fundamental-box'>
+                           <b>📊 Perfil Financiero (Fuente: {av['source']}):</b><br>
+                            Márgenes: <b class='status-ok'>{av['margin']}%</b> | ROE: <b class='status-ok'>{av['roe']}%</b> | Deuda/Eq: <b class='status-ok'>{av['debt']}</b><br>
+                            Target Wall St: <b class='status-ok'>${av['target']}</b> | Potencial: <b class='status-ok'>{up}%</b>
+                        </div>""", unsafe_allow_html=True)
+
+            with c_btn2:
+                # NUEVO: Botón de compartir
+                resumen_txt = generar_texto_compartir(row, estrategia)
+                st.copy_to_clipboard(resumen_txt) # Copia directa al portapapeles
+                if st.button("🔗 Copiar Alerta para Compartir", use_container_width=True):
+                    st.toast("✅ Resumen copiado al portapapeles. ¡Pégalo en WhatsApp o Telegram!")
+
             x = np.linspace(row['BE'] * 0.8, row['Precio'] * 1.2, 300)
             y = np.where(x >= row['Strike'], row['Prima'] * 100, (x - row['Strike'] + row['Prima']) * 100)
             fig = go.Figure()
@@ -397,6 +432,7 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
 
 
