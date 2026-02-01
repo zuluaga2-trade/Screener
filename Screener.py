@@ -128,7 +128,7 @@ f_sma = st.sidebar.toggle("Solo SMA 200 (✅)", value=False)
 f_stoch = st.sidebar.toggle("Solo Stoch < 30 (1D) 📉", value=False)
 
 # --- 4. DASHBOARD DE PESTAÑAS ---
-tab1, tab2, tab3 = st.tabs(["📊 SCREENER PROFESIONAL", "🏗️ BÚNKER DE TICKERS", "🧠 ACADEMIA DE VOLATILIDAD"])
+tab1, tab2, tab3, tab4 = st.tabs(["📊 SCREENER PROFESIONAL", "🏗️ BÚNKER DE TICKERS", "🧠 ACADEMIA DE VOLATILIDAD", "📖 GUÍA DE INICIO"])
 
 with tab2:
     st.subheader("⚙️ Configuración del Búnker")
@@ -167,6 +167,41 @@ with tab3:
     - Acción a $150. Strike a $130. ATR es $3.00.
     - Estás a $20 de distancia, lo que equivale a casi **7 días de ATR**. Si la IV es mayor que la HV y no hay Earnings, la probabilidad de éxito es masiva.
     """)
+
+with tab4:
+    st.header("🚀 Guía de Inicio Rápido")
+    
+    col_g1, col_g2 = st.columns(2)
+    
+    with col_g1:
+        st.subheader("🔑 1. Configuración de Keys")
+        st.markdown("""
+        Para que el sistema funcione, necesitas conectar con los proveedores de datos:
+        * **Tradier Brokerage:** Es de donde obtenemos los precios de opciones en tiempo real. 
+            1. Crea una cuenta en [Tradier](https://tradier.com/).
+            2. En tu dashboard, busca 'API Settings' y genera un **Access Token**.
+            3. Pégalo en la barra lateral y dale a **Guardar**.
+        * **Alpha Vantage:** Proporciona el calendario de Earnings y datos fundamentales.
+            1. Solicita una key gratuita en [Alpha Vantage](https://www.alphavantage.co/support/#api-key).
+            2. Pégala en la barra lateral y dale a **Guardar**.
+        """)
+        
+    with col_g2:
+        st.subheader("🎯 2. Estrategias Básicas")
+        st.info("**Cash Secured Put (CSP):** Vendes el derecho a que alguien te venda acciones a un precio más bajo (Strike). Cobras una renta hoy. Si la acción baja del strike, compras las acciones con descuento.")
+        st.info("**Covered Call (CC):** Si ya tienes 100 acciones, vendes el derecho a que alguien te las compre a un precio más alto. Cobras la renta mientras esperas que suban.")
+
+    st.divider()
+    
+    st.subheader("🛠️ 3. Cómo usar el Screener")
+    st.markdown("""
+    1.  **Selecciona tu Búnker:** Ve a la pestaña 'Búnker' y pega los tickers de las empresas que te gustaría ser dueño (ej: AAPL, MSFT, NVDA).
+    2.  **Ajusta tus filtros:** En la barra lateral, define el **DTE** (días a expiración, recomendado 30-45) y el **ROI Anualizado** que buscas.
+    3.  **Inicia el Barrido:** Presiona el botón de cohete. El sistema buscará entre miles de contratos cuáles cumplen con tus filtros técnicos (SMA 200, Stoch, Delta).
+    4.  **Analiza la Ficha Sniper:** Haz clic en una fila para ver el análisis detallado, el riesgo de capital y el gráfico de ganancias/pérdidas.
+    """)
+    
+    st.success("💡 **Consejo Pro:** Mira siempre el **IV vs HV** en el Radar de Volatilidad. Si la IV es mayor, te están pagando una prima 'cara', lo cual es ideal para vendedores.")
 
 # --- 5. MOTORES DE DATOS (CON PARCHE DE REDUNDANCIA) ---
 @st.cache_data(ttl=86400)
@@ -355,6 +390,7 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
 
 
