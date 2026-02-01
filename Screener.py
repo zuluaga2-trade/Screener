@@ -126,6 +126,7 @@ roi_min_f = st.sidebar.number_input("ROI Ann Mín %", value=15.0, step=1.0)
 st.sidebar.divider()
 f_sma = st.sidebar.toggle("Solo SMA 200 (✅)", value=False)
 f_stoch = st.sidebar.toggle("Solo Stoch < 30 (1D) 📉", value=False)
+f_earnings = st.sidebar.toggle("Evitar Earnings (Solo NO) 🚫", value=False) # <--- NUEVA OPCIÓN
 
 # --- 4. DASHBOARD DE PESTAÑAS ---
 tab1, tab2, tab3, tab4 = st.tabs(["📊 SCREENER PROFESIONAL", "🏗️ BÚNKER DE TICKERS", "🧠 ACADEMIA DE VOLATILIDAD", "📖 GUÍA DE INICIO"])
@@ -318,6 +319,10 @@ with tab1:
                             if f_sma and sma200 and strike >= sma200: continue
                             if f_stoch and stoch_v >= 30: continue
                             
+                            # NUEVO FILTRO DE EARNINGS
+                            es_earnings = "SÍ" if e_date and d_str >= e_date >= today.strftime('%Y-%m-%d') else "NO"
+                            if f_earnings and es_earnings == "SÍ": continue
+                            
                             roi_a = round(((premium / base) * 100) * (365 / max(dte, 1)), 2)
                             if roi_a >= roi_min_f:
                                 res_list.append({
@@ -392,6 +397,7 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
 
 
