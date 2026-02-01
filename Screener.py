@@ -78,18 +78,34 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. PERSISTENCIA ---
-def save_data(f, k): 
-    with open(f, "w") as file: file.write(k)
-def load_data(f, default=""): 
-    return open(f, "r").read().strip() if os.path.exists(f) else default
+# --- 2. PERSISTENCIA PERSONALIZADA POR USUARIO ---
+def get_user_path(base_name):
+    # Crea un nombre de archivo único para cada usuario (ej. .jose_tradier_token)
+    usuario_id = st.session_state.get("usuario", "default").lower()
+    return f".{usuario_id}_{base_name}"
 
-# --- 3. BARRA LATERAL ---
+def save_data(f_name, content): 
+    path = get_user_path(f_name)
+    with open(path, "w") as file: 
+        file.write(content)
+
+def load_data(f_name, default=""): 
+    path = get_user_path(f_name)
+    return open(path, "r").read().strip() if os.path.exists(path) else default
+
+# --- 3. BARRA LATERAL (DATOS DEL USUARIO) ---
 st.sidebar.title("🚀 Centro de Mando")
-tradier_token = st.sidebar.text_input("Tradier Token", value=load_data(".tradier_token"), type="password")
-av_key = st.sidebar.text_input("Alpha Vantage Key", value=load_data(".av_key"), type="password")
-if tradier_token: save_data(".tradier_token", tradier_token)
-if av_key: save_data(".av_key", av_key)
+st.sidebar.write(f"👤 Usuario: **{st.session_state.get('usuario', 'Invitado')}**")
+
+# Cargamos las claves específicas del usuario actual
+tradier_token = st.sidebar.text_input("Tradier Token", value=load_data("tradier_token"), type="password")
+av_key = st.sidebar.text_input("Alpha Vantage Key", value=load_data("av_key"), type="password")
+
+# Botón para guardar las llaves de forma permanente para este usuario
+if st.sidebar.button("💾 Guardar mis Credenciales"):
+    save_data("tradier_token", tradier_token)
+    save_data("av_key", av_key)
+    st.sidebar.success("¡Credenciales guardadas!")
 
 entorno = st.sidebar.selectbox("Entorno Tradier", ["Sandbox", "Brokerage"])
 API_TRADIER = "https://api.tradier.com/v1/" if entorno == "Brokerage" else "https://sandbox.tradier.com/v1/"
@@ -324,3 +340,4 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
