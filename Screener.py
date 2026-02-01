@@ -401,9 +401,10 @@ with tab1:
 
             with c_btn2:
                 resumen_txt = generar_texto_compartir(row, estrategia)
-                if st.button("🔗 Copiar Alerta", use_container_width=True):
-                    st.copy_to_clipboard(resumen_txt)
-                    st.toast("✅ ¡Copiado! Pégalo en WhatsApp o Telegram")
+                st.write("🔗 **Comparte esta Alerta:**")
+                # st.code crea un bloque con un botón de copiar manual que funciona siempre
+                st.code(resumen_txt, language=None)
+                st.caption("Haz clic en el icono de la derecha del cuadro gris para copiar.")
 
             x = np.linspace(row['BE'] * 0.8, row['Precio'] * 1.2, 300)
             y = np.where(x >= row['Strike'], row['Prima'] * 100, (x - row['Strike'] + row['Prima']) * 100)
@@ -415,4 +416,5 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
