@@ -302,7 +302,9 @@ with tab1:
                     for opt in opts:
                         if opt['option_type'] == ('put' if estrategia == "Cash Secured Put (CSP)" else 'call'):
                             strike = float(opt['strike'])
-                            premium = round(float((opt.get('bid', 0) + opt.get('ask', 0)) / 2), 2)
+                            bid_price = opt.get('bid') if opt.get('bid') is not None else 0
+                            ask_price = opt.get('ask') if opt.get('ask') is not None else 0
+                            premium = round(float((bid_price + ask_price) / 2), 2)
                             if estrategia == "Cash Secured Put (CSP)":
                                 cap_r = round((strike - premium) * 100, 2)
                                 if cap_r > max_cap_input: continue
@@ -390,6 +392,7 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
 
 
