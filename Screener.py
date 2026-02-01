@@ -204,19 +204,6 @@ with tab4:
     
     st.success("💡 **Consejo Pro:** Mira siempre el **IV vs HV** en el Radar de Volatilidad. Si la IV es mayor, te están pagando una prima 'cara', lo cual es ideal para vendedores.")
 
-def generar_texto_compartir(row, estrategia):
-    texto = f"🦅 *ALPHA HUNTER ELITE - ALERTA DE POSICIÓN*\n\n"
-    texto += f"🎯 **Ticker:** {row['Ticker']}\n"
-    texto += f"🛠 **Estrategia:** {estrategia}\n"
-    texto += f"📅 **Expira:** {row['Exp']} ({row['DTE']} DTE)\n"
-    texto += f"💰 **Strike:** ${row['Strike']}\n"
-    texto += f"💵 **Prima:** ${row['Prima']}\n"
-    texto += f"📈 **ROI Anual:** {row['ROI Ann %']}%\n"
-    texto += f"🛡 **Breakeven:** ${row['BE']}\n"
-    texto += f"📊 **POP:** {row['POP %']}%\n"
-    texto += f"\n🔥 *Análisis generado por Alpha Hunter Elite*"
-    return texto
-
 # --- 5. MOTORES DE DATOS (CON PARCHE DE REDUNDANCIA) ---
 @st.cache_data(ttl=86400)
 def sync_global_earnings(key):
@@ -386,11 +373,6 @@ with tab1:
                 </table>
             </div>""", unsafe_allow_html=True)
 
-            
-        # --- BOTONES DE ACCIÓN (SUSTITUIR EL BOTÓN DE ANÁLISIS ANTERIOR POR ESTO) ---
-            c_btn1, c_btn2 = st.columns(2)
-            
-            with c_btn1:
             if st.button(f"📊 Ver Análisis de Negocio para {row['Ticker']}"):
                 av = get_hybrid_overview(row['Ticker'], av_key) # <-- LLAMADA AL PARCHE HÍBRIDO
                 if av:
@@ -398,21 +380,12 @@ with tab1:
                     st.markdown(f"""
                     <div class='fundamental-box'>
                        <b>📊 Perfil Financiero Institucional (Fuente: {av['source']}):</b><br>
-                       Márgenes: <b class='status-ok'>{av['margin']}%</b> | ROE: <b class='status-ok'>{av['roe']}%</b> | Deuda/Eq: <b class='status-ok'>{av['debt']}</b><br>
-                            Target Wall St: <b class='status-ok'>${av['target']}</b> | Potencial: <b class='status-ok'>{up}%</b>
-                        </div>""", unsafe_allow_html=True)
                         <span class='tooltip' title='Margen Operativo TTM: Indica cuánto beneficio genera la empresa por cada dólar de venta tras pagar sus costos operativos.'>Márgenes:</span> <b class='status-ok'>{av['margin']:,.2f}%</b> | 
                         <span class='tooltip' title='Return on Equity TTM: Mide la rentabilidad que la empresa genera con el dinero de sus accionistas.'>ROE:</span> <b class='status-ok'>{av['roe']:,.2f}%</b> | 
                         <span class='tooltip' title='Relación Deuda/Equity: Nivel de deuda sobre capital propio. Un valor menor a 1.0 es excelente.'>Deuda/Eq:</span> <b class='status-ok'>{av['debt']:,.2f}</b><br>
                         <span class='tooltip' title='Precio Objetivo Promedio: Valor que los analistas de Wall Street esperan que alcance la acción.'>Target Wall St:</span> <b class='status-ok'>${av['target']:,.2f}</b> | 
                         <span class='tooltip' title='Potencial de Crecimiento: Porcentaje de subida esperado desde el precio actual hasta el target.'>Potencial:</span> <b class='status-ok'>{up:,.2f}%</b>
                     </div>""", unsafe_allow_html=True)
-            
-             with c_btn2:
-                resumen_txt = generar_texto_compartir(row, estrategia)
-                if st.button("🔗 Copiar Alerta para Compartir", use_container_width=True):
-                    st.copy_to_clipboard(resumen_txt)
-                    st.toast("✅ Resumen copiado al portapapeles. ¡Pégalo en WhatsApp!")
 
             x = np.linspace(row['BE'] * 0.8, row['Precio'] * 1.2, 300)
             y = np.where(x >= row['Strike'], row['Prima'] * 100, (x - row['Strike'] + row['Prima']) * 100)
@@ -424,4 +397,3 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
-
