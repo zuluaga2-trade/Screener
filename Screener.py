@@ -269,20 +269,20 @@ def get_market_techs(sym):
 # --- 6. SCREENER ---
 with tab1:
     CATEGORIAS = {
-        "🌐 SCANNER GLOBAL": ["SPY","TSLA","NVDA","AAPL","META","AMD","MSFT","PLTR","AMZN","NFLX","XOM","BA","JPM","DIS","GOOGL"],
+        "🌐 SCANNER GLOBAL": ["SPY","QQQ","DIA","AAPL","MSFT","GOOGL","AMZN","META","TSLA","NVDA","AMD","INTC","PYPL","ADBE","NFLX","DIS","NKE","SBUX","V","MA","JPM","BAC","GS","XOM","CVX","PFE","JNJ","UNH","LLY","ABBV","COST","WMT","TGT","HD","LOW","BA","CAT","GE","MMM","HON","UPS","FDX","AMT","PLD","NEE","DUK","T","VZ","CRM","PLTR"],
         "🌐 MI BÚNKER": tickers_clean,
-        "📊 ETFs & Índices": ["SPY", "QQQ", "IWM", "DIA", "TLT", "XLE", "XLF", "XLV", "XLI", "XLK", "XLU", "XLRE"],
-        "🚀 HIGH VOL": ["MSTR", "MARA", "COIN", "SOXL", "AFRM", "ROKU", "PLTR", "TQQQ"],
-        "💻 TECNOLOGÍA": ["MSFT", "AAPL", "NVDA", "AMD", "AVGO", "ORCL", "CRM", "INTC", "SMCI", "NOW", "ANET"],
-        "🛍️ CONSUMO": ["AMZN", "TSLA", "HD", "MCD", "NKE", "SBUX", "BKNG", "COST", "LULU", "NVO"],
-        "💊 SALUD": ["LLY", "JNJ", "UNH", "PFE", "ABBV", "MRK", "TMO", "ISRG"],
-        "🏦 FINANZAS": ["JPM", "BAC", "GS", "MS", "V", "MA", "AXP", "WFC"],
-        "🏗️ INDUSTRIAL": ["BA", "CAT", "GE", "UNP", "HON", "UPS", "LMT", "RTX", "DE"],
-        "🛢️ ENERGÍA": ["XOM", "CVX", "COP", "SLB", "XLE", "MPC", "PSX", "VLO"],
-        "🏢 INMOBILIARIO": ["PLD", "AMT", "EQIX", "CCI", "WY", "SPG", "O"],
-        "⛏️ MATERIALES": ["LIN", "APD", "NEM", "FCX", "SHW", "CTVA", "ECL"],
-        "🔌 UTILITIES": ["NEE", "DUK", "SO", "D", "AEP", "EXC", "AWK"],
-        "📡 COMUNICACIONES": ["GOOGL", "META", "NFLX", "DIS", "TMUS", "VZ", "CMCSA"],
+       "📊 ETFs & Índices": ["SPY", "QQQ", "IWM", "DIA", "TLT", "XLF", "XLE", "XLK", "XLV", "XLI", "XLY", "XLP", "XLB", "XLU", "XLC", "EEM", "EWZ", "FXI", "SLV", "GLD"],
+        "🚀 HIGH VOL": ["TSLA", "NVDA", "MSTR", "MARA", "COIN", "PLTR", "AMD", "SMCI", "ARM", "SOXL", "TQQQ", "SQ", "ROKU", "GME", "AMC", "NIO", "AFRM", "HOOD", "PATH", "SHOP"],
+        "💻 TECNOLOGÍA": ["AAPL", "MSFT", "GOOGL", "NVDA", "AMD", "AVGO", "ORCL", "CRM", "INTC", "CSCO", "ADBE", "TXN", "QCOM", "AMAT", "MU", "LRCX", "NOW", "PANW", "SNPS", "CDNS"],
+        "🛍️ CONSUMO": ["AMZN", "TSLA", "HD", "MCD", "NKE", "SBUX", "COST", "WMT", "TGT", "LOW", "BKNG", "LULU", "TJX", "ORLY", "MAR", "EL", "PG", "KO", "PEP", "PM"],
+        "💊 SALUD": ["LLY", "UNH", "JNJ", "ABBV", "MRK", "PFE", "TMO", "ABT", "DHR", "ISRG", "AMGN", "CVS", "BMY", "GILD", "MRNA", "VRTX", "REGN", "HUM", "CI", "ELV"],
+        "🏦 FINANZAS": ["JPM", "BAC", "V", "MA", "WFC", "MS", "GS", "AXP", "C", "PYPL", "SQ", "BLK", "BX", "SCHW", "SOFI", "CB", "PGR", "MMC", "AON", "USB"],
+        "🏗️ INDUSTRIAL": ["BA", "CAT", "GE", "UNP", "HON", "UPS", "FDX", "LMT", "RTX", "DE", "MMM", "WM", "NSC", "ETN", "ITW", "EMR", "ADM", "GEV", "GD", "NOC"],
+        "🛢️ ENERGÍA": ["XOM", "CVX", "COP", "SLB", "EOG", "OXY", "MPC", "PSX", "VLO", "HES", "BKR", "HAL", "DVN", "FANG", "WMB", "OKE", "LNG", "ET", "KMI", "PBR"],
+        "🏢 INMOBILIARIO": ["PLD", "AMT", "EQIX", "CCI", "WY", "SPG", "O", "WELL", "PSA", "DLR", "VICI", "AVB", "EQR", "CBRE", "ARE", "EXR", "VRE", "FRT", "SBAC", "BXP"],
+        "⛏️ MATERIALES": ["LIN", "APD", "NEM", "FCX", "SHW", "CTVA", "ECL", "ALB", "DOW", "LYB", "NUE", "MLM", "VMC", "RIO", "VALE", "MOS", "FMC", "IFF", "EMN", "SMG"],
+        "🔌 UTILITIES": ["NEE", "DUK", "SO", "D", "AEP", "EXC", "SRE", "PCG", "PEG", "ED", "WEC", "XEL", "AWK", "EIX", "ES", "FE", "DTE", "PPL", "CNP", "LNT"],
+        "📡 COMUNICACIONES": ["GOOGL", "META", "NFLX", "DIS", "CMCSA", "TMUS", "VZ", "T", "CHTR", "WBD", "PARA", "ROKU", "SNAP", "PINS", "BIDU", "SPOT", "EA", "TTWO", "SHOP", "MTCH"],
         "🎯 INDIVIDUAL": ["CUSTOM"]
     }
     
@@ -417,6 +417,7 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
 
 
