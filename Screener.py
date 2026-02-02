@@ -268,10 +268,10 @@ def get_market_techs(sym):
 
 # --- 6. SCREENER ---
 with tab1:
-    CATEGORIAS = {
-        "🌐 SCANNER GLOBAL": ["SPY","QQQ","DIA","AAPL","MSFT","GOOGL","AMZN","META","TSLA","NVDA","AMD","INTC","PYPL","ADBE","NFLX","DIS","NKE","SBUX","V","MA","JPM","BAC","GS","XOM","CVX","PFE","JNJ","UNH","LLY","ABBV","COST","WMT","TGT","HD","LOW","BA","CAT","GE","MMM","HON","UPS","FDX","AMT","PLD","NEE","DUK","T","VZ","CRM","PLTR"],
-        "🌐 MI BÚNKER": tickers_clean,
-       "📊 ETFs & Índices": ["SPY", "QQQ", "IWM", "DIA", "TLT", "XLF", "XLE", "XLK", "XLV", "XLI", "XLY", "XLP", "XLB", "XLU", "XLC", "EEM", "EWZ", "FXI", "SLV", "GLD"],
+   # --- CONFIGURACIÓN DINÁMICA DE CATEGORÍAS ---
+    # 1. Definimos primero los sectores individuales
+    SECTORES = {
+        "📊 ETFs & Índices": ["SPY", "QQQ", "IWM", "DIA", "TLT", "XLF", "XLE", "XLK", "XLV", "XLI", "XLY", "XLP", "XLB", "XLU", "XLC", "EEM", "EWZ", "FXI", "SLV", "GLD"],
         "🚀 HIGH VOL": ["TSLA", "NVDA", "MSTR", "MARA", "COIN", "PLTR", "AMD", "SMCI", "ARM", "SOXL", "TQQQ", "SQ", "ROKU", "GME", "AMC", "NIO", "AFRM", "HOOD", "PATH", "SHOP"],
         "💻 TECNOLOGÍA": ["AAPL", "MSFT", "GOOGL", "NVDA", "AMD", "AVGO", "ORCL", "CRM", "INTC", "CSCO", "ADBE", "TXN", "QCOM", "AMAT", "MU", "LRCX", "NOW", "PANW", "SNPS", "CDNS"],
         "🛍️ CONSUMO": ["AMZN", "TSLA", "HD", "MCD", "NKE", "SBUX", "COST", "WMT", "TGT", "LOW", "BKNG", "LULU", "TJX", "ORLY", "MAR", "EL", "PG", "KO", "PEP", "PM"],
@@ -282,7 +282,19 @@ with tab1:
         "🏢 INMOBILIARIO": ["PLD", "AMT", "EQIX", "CCI", "WY", "SPG", "O", "WELL", "PSA", "DLR", "VICI", "AVB", "EQR", "CBRE", "ARE", "EXR", "VRE", "FRT", "SBAC", "BXP"],
         "⛏️ MATERIALES": ["LIN", "APD", "NEM", "FCX", "SHW", "CTVA", "ECL", "ALB", "DOW", "LYB", "NUE", "MLM", "VMC", "RIO", "VALE", "MOS", "FMC", "IFF", "EMN", "SMG"],
         "🔌 UTILITIES": ["NEE", "DUK", "SO", "D", "AEP", "EXC", "SRE", "PCG", "PEG", "ED", "WEC", "XEL", "AWK", "EIX", "ES", "FE", "DTE", "PPL", "CNP", "LNT"],
-        "📡 COMUNICACIONES": ["GOOGL", "META", "NFLX", "DIS", "CMCSA", "TMUS", "VZ", "T", "CHTR", "WBD", "PARA", "ROKU", "SNAP", "PINS", "BIDU", "SPOT", "EA", "TTWO", "SHOP", "MTCH"],
+        "📡 COMUNICACIONES": ["GOOGL", "META", "NFLX", "DIS", "TMUS", "VZ", "T", "CHTR", "WBD", "PARA", "ROKU", "SNAP", "PINS", "BIDU", "SPOT", "EA", "TTWO", "SHOP", "MTCH"]
+    }
+
+    # 2. Creamos la lista global sumando todos los sectores sin repetir tickers (set)
+    lista_completa = []
+    for s in SECTORES.values(): lista_completa.extend(s)
+    scanner_global_total = sorted(list(set(lista_completa)))
+
+    # 3. Construimos el diccionario final de CATEGORIAS que usa el selector
+    CATEGORIAS = {
+        "🌐 SCANNER GLOBAL (MASIVO)": scanner_global_total,
+        "🛡️ MI BÚNKER": tickers_clean,
+        **SECTORES,
         "🎯 INDIVIDUAL": ["CUSTOM"]
     }
     
@@ -417,6 +429,7 @@ with tab1:
             if row['sma200_val']: fig.add_trace(go.Scatter(x=[row['sma200_val'], row['sma200_val']], y=[min(y), max(y)], name="SMA 200", line=dict(color="#3498db", dash='dash')))
             fig.update_layout(template="plotly_dark", height=450, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Precio del Activo ($)", yaxis_title="Profit / Loss ($)")
             st.plotly_chart(fig, use_container_width=True)
+
 
 
 
